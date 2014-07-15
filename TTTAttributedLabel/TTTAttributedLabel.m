@@ -1111,13 +1111,6 @@ afterInheritingLabelAttributesAndConfiguringWithBlock:(NSMutableAttributedString
 
         [self setNeedsDisplay];
     }
-    
-    [self.longPressTimer invalidate];
-    self.longPressTimer = nil;
-
-    if (_activeLink) {
-        self.longPressTimer = [NSTimer scheduledTimerWithTimeInterval:kLongPressTimeInterval target:self selector:@selector(longPressTimerDidFire:) userInfo:nil repeats:NO];
-    }
 }
 
 #pragma mark - UILabel
@@ -1445,6 +1438,10 @@ afterInheritingLabelAttributesAndConfiguringWithBlock:(NSMutableAttributedString
         if ([self.delegate respondsToSelector:@selector(attributedLabel:didLongPressLinkWithTextCheckingResult:atPoint:)]) {
             [self.delegate attributedLabel:self didLongPressLinkWithTextCheckingResult:result atPoint:self.touchPoint];
         }
+    } else {
+        if ([self.delegate respondsToSelector:@selector(attributedLabel:didLongPressLinkWithTextCheckingResult:atPoint:)]) {
+            [self.delegate attributedLabel:self didLongPressLinkWithTextCheckingResult:nil atPoint:self.touchPoint];
+        }
     }
 }
 
@@ -1466,6 +1463,8 @@ afterInheritingLabelAttributesAndConfiguringWithBlock:(NSMutableAttributedString
     UITouch *touch = [touches anyObject];
     self.touchPoint = [touch locationInView:self];
     self.activeLink = [self linkAtPoint:self.touchPoint];
+    
+    [self activeLongPressTimer];
 
     if (!self.activeLink) {
         [super touchesBegan:touches withEvent:event];
@@ -1478,25 +1477,15 @@ afterInheritingLabelAttributesAndConfiguringWithBlock:(NSMutableAttributedString
 - (void)touchesMoved:(NSSet *)touches
            withEvent:(UIEvent *)event
 {
+    UITouch *touch = [touches anyObject];
+    CGPoint point = [touch locationInView:self];
+    
+    [self chkLongPressMoving:point];
+    
     if (self.activeLink) {
-        UITouch *touch = [touches anyObject];
-        CGPoint point = [touch locationInView:self];
-
         if (self.activeLink != [self linkAtPoint:point]) {
             self.activeLink = nil;
         }
-        
-        // Restart the the timer if the finger moves too far
-        if (fabsf(self.touchPoint.x - point.x) >= kLongPressGutter
-            || fabsf(self.touchPoint.y - point.y) >= kLongPressGutter) {
-            [self.longPressTimer invalidate];
-            self.longPressTimer = nil;
-            if (self.activeLink) {
-                self.longPressTimer = [NSTimer scheduledTimerWithTimeInterval:kLongPressTimeInterval target:self selector:@selector(longPressTimerDidFire:) userInfo:nil repeats:NO];
-                self.touchPoint = point;
-            }
-        }
-        
     } else {
         [super touchesMoved:touches withEvent:event];
     }
@@ -1688,6 +1677,34 @@ afterInheritingLabelAttributesAndConfiguringWithBlock:(NSMutableAttributedString
     }
     
     return self;
+}
+
+- (void)activeLongPressTimer
+{
+    CFIndex idx = [self characterIndexAtPoint:self.touchPoint];
+    
+    [self.longPressTimer invalidate];
+    self.longPressTimer = nil;
+
+    if (idx != NSNotFound) {
+        self.longPressTimer = [NSTimer scheduledTimerWithTimeInterval:kLongPressTimeInterval target:self selector:@selector(longPressTimerDidFire:) userInfo:nil repeats:NO];
+    }
+}
+
+- (void)chkLongPressMoving:(CGPoint)point
+{
+    CFIndex idx = [self characterIndexAtPoint:point];
+    
+    // Restart the the timer if the finger moves too far
+    if (fabsf(self.touchPoint.x - point.x) >= kLongPressGutter
+        || fabsf(self.touchPoint.y - point.y) >= kLongPressGutter) {
+        [self.longPressTimer invalidate];
+        self.longPressTimer = nil;
+        if (idx != NSNotFound) {
+            self.longPressTimer = [NSTimer scheduledTimerWithTimeInterval:kLongPressTimeInterval target:self selector:@selector(longPressTimerDidFire:) userInfo:nil repeats:NO];
+        }
+        self.touchPoint = point;
+    }
 }
 
 @end
