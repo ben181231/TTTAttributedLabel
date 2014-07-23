@@ -1494,6 +1494,8 @@ afterInheritingLabelAttributesAndConfiguringWithBlock:(NSMutableAttributedString
 - (void)touchesEnded:(NSSet *)touches
            withEvent:(UIEvent *)event
 {
+    [self inactiveLongPressTimer];
+    
     if (self.activeLink) {
         NSTextCheckingResult *result = self.activeLink;
         self.activeLink = nil;
@@ -1679,6 +1681,8 @@ afterInheritingLabelAttributesAndConfiguringWithBlock:(NSMutableAttributedString
     return self;
 }
 
+#pragma mark - long press detection
+
 - (void)activeLongPressTimer
 {
     CFIndex idx = [self characterIndexAtPoint:self.touchPoint];
@@ -1689,6 +1693,12 @@ afterInheritingLabelAttributesAndConfiguringWithBlock:(NSMutableAttributedString
     if (idx != NSNotFound) {
         self.longPressTimer = [NSTimer scheduledTimerWithTimeInterval:kLongPressTimeInterval target:self selector:@selector(longPressTimerDidFire:) userInfo:nil repeats:NO];
     }
+}
+
+- (void)inactiveLongPressTimer
+{
+    [self.longPressTimer invalidate];
+    self.longPressTimer = nil;
 }
 
 - (void)chkLongPressMoving:(CGPoint)point
