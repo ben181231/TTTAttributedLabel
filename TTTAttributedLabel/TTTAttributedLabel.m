@@ -1549,6 +1549,8 @@ afterInheritingLabelAttributesAndConfiguringWithBlock:(NSMutableAttributedString
 - (void)touchesCancelled:(NSSet *)touches
                withEvent:(UIEvent *)event
 {
+    [self inactiveLongPressTimer];
+    
     if (self.activeLink) {
         self.activeLink = nil;
     } else {
