@@ -1402,7 +1402,6 @@ afterInheritingLabelAttributesAndConfiguringWithBlock:(NSMutableAttributedString
     if (self.activeLink) {
         NSTextCheckingResult *result = self.activeLink;
         self.activeLink = nil;
-        self.alpha = 1;
         
         switch (result.resultType) {
             case NSTextCheckingTypeLink:
@@ -1475,8 +1474,6 @@ afterInheritingLabelAttributesAndConfiguringWithBlock:(NSMutableAttributedString
 
     if (!self.activeLink) {
         [super touchesBegan:touches withEvent:event];
-    } else {
-        self.alpha = .5;
     }
 }
 
@@ -1508,7 +1505,6 @@ afterInheritingLabelAttributesAndConfiguringWithBlock:(NSMutableAttributedString
     if (self.activeLink) {
         NSTextCheckingResult *result = self.activeLink;
         self.activeLink = nil;
-        self.alpha = 1;
 
         switch (result.resultType) {
             case NSTextCheckingTypeLink:
@@ -1562,7 +1558,6 @@ afterInheritingLabelAttributesAndConfiguringWithBlock:(NSMutableAttributedString
     [self inactiveLongPressTimer];
     
     if (self.activeLink) {
-        self.alpha = 1;
         self.activeLink = nil;
     } else {
         [super touchesCancelled:touches withEvent:event];
